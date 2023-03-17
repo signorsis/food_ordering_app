@@ -2,7 +2,7 @@ import Card from "../UI/Card";
 import MealItem from "./MealItem/MealItem";
 import classes from "./AvailableMeals.module.css";
 import useFetch from "../../hooks/use-fetch";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 // const DUMMY_MEALS = [
 //   {
@@ -32,32 +32,24 @@ import { useCallback, useEffect, useState } from "react";
 // ];
 
 const AvailableMeals = () => {
-  const [isLoading,setIsLoading]=useState(false)
- 
-  const [error,setError]=useState(false)
   const [mealData, setMealData] = useState([]);
-  const fetchRequest = useCallback(async () => {
-     setIsLoading(true);
-     setError(null);
-    try {
-      const response = await fetch("https://react-http-c8937-default-rtdb.firebaseio.com/meals.json"
-      );
-
-      if (!response.ok) {
-        throw new Error("error fetching ");
-      }
-      const data = await response.json();
-    
-      setMealData(data);
-    } catch (error) {
-      console.log(error);
-    }
-    setIsLoading(false);
+  
+  
+  
+  const extractData = useCallback((meals) => {
+    setMealData(meals);
   }, []);
+  
+  const requestconfig = useMemo (()=> {return {
+    url: "https://react-http-c8937-default-rtdb.firebaseio.com/meals.json"
+  }},[])
+  
+  const { error, isLoading, fetchRequest: fetchMeals } = useFetch(requestconfig,extractData);
 
-  useEffect(()=>{fetchRequest()},[fetchRequest])
+  useEffect(()=>{fetchMeals()}
+  ,[fetchMeals])
 
-   let mealsList;
+  let mealsList;
   if (mealData.length > 0) {
     mealsList = mealData.map((meal) => (
       <MealItem

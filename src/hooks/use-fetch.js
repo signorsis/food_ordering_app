@@ -1,42 +1,31 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
-const useFetch = () => {
-  const [data, setData] = useState({});
-  const [error,setError]=useState(null);
-  const [isLoading,setIsLoading]=useState(false);
-  const fetchRequest =useCallback ( (requestConfig,applyData)=>{ return (async () => {
-      setIsLoading(true);
-
+const useFetch = (requestconfig,applyData) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
+  
+  const fetchRequest = useCallback( async() => {
+    setIsLoading(true);
+    setError(null);
     try {
-      const response = await fetch(
-        "https://react-http-c8937-default-rtdb.firebaseio.coms/meals",
-        {
-          method: requestConfig.method ? requestConfig.method :"GET",
-          body: requestConfig.body ? requestConfig.body : null,
-          header: requestConfig.header ? requestConfig.header : null,
-        }
-      );
-
-      if (!response.ok) {
+      const response=await fetch( requestconfig.url, {
+        method: requestconfig.method? requestconfig.method: "GET",
+        body: requestconfig.body? requestconfig.body: null,
+        header: requestconfig.headers? requestconfig.headers: null 
+      })
         
-        throw new Error("fetching not succesful");
-      }
-
-      const fetchData = await response.json();
-     applyData(fetchData);
-      setData(fetchData);
+        const data=await response.json();
+        
+         applyData(data);
     } catch (error) {
-      setError(error.message);
-      console.log(error);
+      console.log(error.message);
     }
     setIsLoading(false);
+    
+  }, [applyData,requestconfig]);
 
-  })},[])
- 
-useEffect(()=>{
+  
 
-  fetchRequest()
-},[fetchRequest]);
-  return {isLoading,error,data, fetchRequest};
+  return { isLoading,error,fetchRequest }
 };
 export default useFetch;
